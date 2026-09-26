@@ -1,1 +1,7 @@
 /.env
+/venv
+/src/rag/__pycache__
+/src/security/__pycache__
+/tests/__pycache__
+/src/db/__pycache__
+/src/__pycache__
