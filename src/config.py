@@ -27,5 +27,5 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 ALLOWED_ROLES = ["Admin", "Compliance_Officer", "Business_Analyst", "Project_Manager", "Stakeholder"]
 
 # Updated to use Gemini and local HuggingFace embeddings
-DEFAULT_LLM_MODEL = "gemini-1.5-flash-latest" 
+DEFAULT_LLM_MODEL = "gemini-3.8-flash" 
 DEFAULT_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
