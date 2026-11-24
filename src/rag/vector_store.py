@@ -5,8 +5,10 @@ from langchain_core.documents import Document
 from src.config import VECTOR_DB_DIR, GEMINI_API_KEY, DEFAULT_EMBEDDING_MODEL
 
 def get_embeddings_model():
-    """Initializes the free, local HuggingFace embedding model."""
-    return HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    """Initializes the configured local HuggingFace embedding model."""
+    if not DEFAULT_EMBEDDING_MODEL:
+        raise RuntimeError("EMBEDDING_MODEL must be configured")
+    return HuggingFaceEmbeddings(model_name=DEFAULT_EMBEDDING_MODEL)
 
 def get_vector_store(collection_name: str = "fintech_compliance") -> Chroma:
     """Loads the existing persistent Chroma vector database."""

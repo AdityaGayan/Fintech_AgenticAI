@@ -21,11 +21,12 @@ KB_DIR.mkdir(exist_ok=True)
 
 # Application Configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 
 # Security Configurations
 ALLOWED_ROLES = ["Admin", "Compliance_Officer", "Business_Analyst", "Project_Manager", "Stakeholder"]
 
 # Updated to use Gemini and local HuggingFace embeddings
-DEFAULT_LLM_MODEL = "gemini-3.5-flash-lite"
-DEFAULT_EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+DEFAULT_LLM_MODEL = GEMINI_MODEL
+DEFAULT_EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
