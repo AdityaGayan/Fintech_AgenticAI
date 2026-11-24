@@ -21,29 +21,6 @@ Financial software requirements often arrive as interview notes, customer emails
 - Uses deterministic fallback behavior when an AI call fails.
 - Labels SDLC results as AI-generated or fallback-generated.
 
-## Use-case diagram
-
-```mermaid
-flowchart LR
-    Stakeholder([Stakeholder / Analyst])
-    Admin([Administrator])
-    Platform((FinTech Agentic AI Platform))
-
-    Stakeholder -->|Submit stakeholder notes| Platform
-    Stakeholder -->|Review and edit requirements| Platform
-    Stakeholder -->|Request SDLC recommendation| Platform
-    Stakeholder -->|View requirements, risks, and decision| Platform
-
-    Admin -->|Configure API/model settings| Platform
-    Admin -->|Maintain compliance documents| Platform
-    Admin -->|Inspect persisted records and audit logs| Platform
-
-    Platform -->|Mask PII| PII[PII masking]
-    Platform -->|Retrieve policies| RAG[Compliance RAG]
-    Platform -->|Extract requirements| RE[Requirements agent]
-    Platform -->|Recommend methodology| SDLC[SDLC agent]
-    Platform -->|Persist records| DB[(SQLite + audit logs)]
-```
 
 ## Detailed user workflow
 
@@ -163,8 +140,8 @@ Create a `.env` file in the project root. Do not commit real secrets.
 
 ```env
 GEMINI_API_KEY=your-gemini-api-key
-GEMINI_MODEL=gemini-2.5-flash-lite
-EMBEDDING_MODEL=all-MiniLM-L6-v2
+GEMINI_MODEL=model_you_are_using
+EMBEDDING_MODEL=embedding_model_you_are_using
 ENVIRONMENT=development
 ```
 
