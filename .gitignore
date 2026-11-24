@@ -1,5 +1,8 @@
 /.env
 /venv
+/.venv
+/data/vector_db/
+/data/requirements.db
 /src/rag/__pycache__
 /src/security/__pycache__
 /tests/__pycache__

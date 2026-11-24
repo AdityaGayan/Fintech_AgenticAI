@@ -134,6 +134,29 @@ Fintech_AgenticAI/
 └── tests/                          # Unit and integration-style tests
 ```
 
+## Compliance knowledge base and Chroma
+
+The repository includes local reference material under
+`data/knowledge_base/regulations` and `data/knowledge_base/policies`:
+
+- `pci_dss_reference.md` — payment-card security and access-control guidance.
+- `gdpr_reference.md` — privacy, data minimization, and PII-handling guidance.
+- `sox_reference.md` — audit trails, segregation of duties, and financial
+  reporting control guidance.
+- `fintech_security_baseline.md` — local baseline controls for fintech systems.
+
+These are concise project references, not copies of regulations or legal advice.
+The `fintech_compliance` Chroma collection is built from these files and stores
+their embedded chunks in `data/vector_db/`. Rebuild it after changing policy
+files:
+
+```bash
+python scripts/build_vector_store.py
+```
+
+The vector database and SQLite runtime database are intentionally ignored by
+Git; the source policy files are the portable, reviewable knowledge base.
+
 ## Configuration
 
 Create a `.env` file in the project root. Do not commit real secrets.
