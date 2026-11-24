@@ -1,0 +1,19 @@
+Title: PCI DSS v4.0.1 — Educational Reference Summary
+Type: Compliance reference
+Status: Educational summary; not the PCI DSS standard or legal advice.
+Source: https://www.pcisecuritystandards.org/standards/pci-dss/
+
+Purpose and scope
+PCI DSS is a baseline of technical and operational requirements for protecting payment account data. It is relevant to entities that store, process, or transmit cardholder data, and to systems that can affect the security of the cardholder data environment.
+
+Control themes
+- Define and document the cardholder-data environment and keep its scope current.
+- Apply least privilege, unique identities, strong authentication, and multi-factor authentication where required.
+- Protect stored payment data and encrypt sensitive data during transmission over open or untrusted networks.
+- Use secure configurations, vulnerability management, malware defenses where appropriate, and secure software development practices.
+- Log security-relevant activity, protect audit logs from unauthorized alteration, and review monitoring data.
+- Test security controls regularly, including vulnerability scans, penetration testing, and incident-response procedures where applicable.
+- Maintain policies, roles, responsibilities, training, risk review, and evidence that controls operate as intended.
+
+How this application uses the reference
+The SDLC recommender may use these themes when requirements mention payment data, cardholder data, authentication, encryption, audit logging, vulnerability management, or incident response. The retrieved text is guidance for classification and does not determine an organization's compliance status.

@@ -1,0 +1,16 @@
+Title: Fintech Security Baseline — Internal Product Policy
+Type: Internal policy reference
+Status: Project guidance; adapt with the organization's security and compliance owners.
+
+Baseline expectations
+- Use least privilege and role-based access for users, services, and administrators.
+- Require strong authentication and multi-factor authentication for privileged or sensitive access.
+- Encrypt sensitive data in transit and at rest; keep secrets outside source code and rotate them safely.
+- Validate inputs, protect APIs, apply secure defaults, and review dependencies for vulnerabilities.
+- Record security-relevant events with timestamps, actor identity, action, result, and correlation data where appropriate.
+- Define retention, deletion, backup, recovery, and incident-escalation rules for sensitive data.
+- Use code review, automated tests, dependency checks, and security testing in the delivery pipeline.
+- Document data flows, risk decisions, control owners, evidence, and exceptions.
+
+How this application uses the reference
+This policy gives the SDLC agent project-specific security vocabulary when a requirement does not name a regulation directly. It supports classification only; it does not replace a formal risk assessment or compliance review.

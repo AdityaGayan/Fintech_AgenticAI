@@ -1,0 +1,18 @@
+Title: SOX Section 404 — Educational Reference Summary
+Type: Compliance reference
+Status: Educational summary; not legal advice.
+Source: https://www.sec.gov/news/extra/soxpress.htm
+
+Control objective
+Section 404 concerns management's assessment of internal control over financial reporting. Public-company reporting obligations can also include an independent auditor's attestation, subject to applicable rules and exemptions.
+
+Control themes
+- Define financial-reporting risks, key controls, control owners, and evidence requirements.
+- Restrict access to financial systems and separate incompatible duties.
+- Review changes to applications, data, configurations, and reporting logic before release.
+- Reconcile important records, investigate exceptions, and preserve an auditable trail.
+- Monitor control operation, document testing, record deficiencies, and track remediation.
+- Retain support for management conclusions and coordinate with internal and external audit activities.
+
+How this application uses the reference
+The SDLC recommender may use these themes when requirements mention financial reporting, accounting data, audit evidence, segregation of duties, reconciliations, approvals, change control, or control testing. The retrieved text is a planning aid and is not an assessment of SOX applicability.

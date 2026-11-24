@@ -92,6 +92,15 @@ flowchart TB
 
 `retrieve_compliance_guidelines()` searches the persistent Chroma collection. Documents are loaded and chunked by `src/rag/document_loader.py`, embedded by `src/rag/vector_store.py`, and queried through `src/rag/compliance_rag.py`.
 
+The included knowledge-base references are:
+
+- `data/knowledge_base/regulations/pci_dss_v4_0_1_reference.txt`
+- `data/knowledge_base/regulations/gdpr_reference.txt`
+- `data/knowledge_base/regulations/sox_section_404_reference.txt`
+- `data/knowledge_base/policies/fintech_security_baseline.txt`
+
+These are concise educational summaries used for retrieval and SDLC classification. They are not substitutes for the official standards, legal advice, or a formal compliance assessment.
+
 ### 4. Requirements extraction
 
 `process_requirements()` sends the sanitized input and retrieved compliance context to Gemini. The response is validated through `AnalyzedRequirement` and `REAgentOutput`. The coordinator converts the result into records containing an ID, domain, source, priority, compliance mapping, risk level, confidence score, and review status.
