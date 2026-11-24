@@ -87,8 +87,9 @@ def _score_sdlc_signals(text: str) -> dict:
     # --- Agile signals: sprint, scrum, kanban, user story, backlog ---
     for kw in ["agile", "sprint", "scrum", "kanban", "user story",
                "backlog", "standup", "retrospective", "mvp",
-               "feedback", "iterate", "continuous", "adapt",
-               "flexible", "evolving", "changing", "frequent change"]:
+               "user feedback", "iterative", "continuous delivery",
+               "continuous improvement", "adapt to change", "flexible scope",
+               "evolving requirements", "changing requirements", "frequent change"]:
         if kw in t:
             scores["Agile"] += 1
 
@@ -185,7 +186,6 @@ def derive_sdlc_from_input_and_rag(
 def recommend_sdlc(
     requirements_summary: str = "",
     retrieved_policies: str = "",
-    **_ignored,
 ) -> dict:
     """
     Recommends the optimal SDLC methodology.
@@ -200,6 +200,11 @@ def recommend_sdlc(
         f"Referenced Compliance Policies:\n{retrieved_policies or 'Standard Financial Policies'}\n\n"
         "Evaluate regulatory rigor, implementation risk, and feature "
         "complexity to choose the best model. "
+        "Choose Agile only when the input explicitly describes changing or "
+        "evolving requirements, sprints, Scrum, Kanban, a backlog, user "
+        "stories, or continuous iterative delivery. Fixed regulatory scope "
+        "should normally use Waterfall or V-Shaped; staged releases should "
+        "use Incremental; significant uncertainty or risk should use Spiral. "
         "You MUST choose exactly one of these: Waterfall, V-Shaped, "
         "Incremental, Rapid Application Development, Prototyping, "
         "Spiral, Agile."
@@ -207,9 +212,10 @@ def recommend_sdlc(
 
     result = invoke_gemini_safely(SDLCRecommendation, prompt)
     if result:
-        return result.model_dump()
+        return {**result.model_dump(), "selection_source": "AI"}
 
-    return derive_sdlc_from_input_and_rag(
+    fallback = derive_sdlc_from_input_and_rag(
         requirements_summary=requirements_summary,
         retrieved_policies=retrieved_policies,
     )
+    return {**fallback, "selection_source": "Fallback"}

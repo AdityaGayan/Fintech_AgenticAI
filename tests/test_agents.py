@@ -62,7 +62,7 @@ class TestRefactoredAgents(unittest.TestCase):
 
         result = recommend_sdlc(requirements_summary="A changing fraud-detection scope")
 
-        self.assertEqual(result, agent_response.model_dump())
+        self.assertEqual(result, {**agent_response.model_dump(), "selection_source": "AI"})
         invoke.assert_called_once()
 
 if __name__ == '__main__':

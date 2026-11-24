@@ -2,7 +2,7 @@ from typing import List
 from langchain_community.vectorstores import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.documents import Document
-from src.config import VECTOR_DB_DIR, GEMINI_API_KEY, DEFAULT_EMBEDDING_MODEL
+from src.config import VECTOR_DB_DIR, DEFAULT_EMBEDDING_MODEL
 
 def get_embeddings_model():
     """Initializes the configured local HuggingFace embedding model."""

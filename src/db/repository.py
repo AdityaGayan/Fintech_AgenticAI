@@ -1,7 +1,6 @@
-import json
-from typing import List, Optional
+from typing import List
 from src.db.connection import get_db_connection
-from src.db.models import RequirementModel, AuditLogModel
+from src.db.models import RequirementModel
 
 class RequirementRepository:
     

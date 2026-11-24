@@ -2,7 +2,7 @@ import re
 import uuid
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from src.agents.base_agent import invoke_gemini_safely, get_llm
+from src.agents.base_agent import invoke_gemini_safely
 
 class AnalyzedRequirement(BaseModel):
     statement: str = Field(description="The extracted formal requirement.")
