@@ -1,23 +1,7 @@
 /.env
-/.venv/
-/venv/
-/env/
-
-# Python caches and test/tool state
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-
-# Local secrets and runtime logs
-.env.*
-!.env.example
-*.log
-.streamlit/secrets.toml
-
-# Local persistence and generated vector indexes
-*.db
-*.sqlite
-*.sqlite3
-/data/vector_db/
+/venv
+/src/rag/__pycache__
+/src/security/__pycache__
+/tests/__pycache__
+/src/db/__pycache__
+/src/__pycache__

@@ -126,14 +126,11 @@ if draft:
         edited_requirements = []
         for index, req in enumerate(requirements):
             with st.expander(f"{req['id']}   |   {req['priority']} priority   |   {req['risk_level']} risk", expanded=True):
-                # Give each submission its own widget state so a new
-                # stakeholder input cannot reuse the previous values.
-                widget_key = f"{input_signature}_{index}"
-                statement = st.text_area("Requirement", value=req["statement"], key=f"statement_{widget_key}")
+                statement = st.text_area("Requirement", value=req["statement"], key=f"statement_{index}")
                 details = st.columns(3)
-                category = details[0].text_input("Category", value=req["category"], key=f"category_{widget_key}")
-                priority = details[1].selectbox("Priority", ["Low", "Medium", "High", "Critical"], index=["Low", "Medium", "High", "Critical"].index(req["priority"]) if req["priority"] in ["Low", "Medium", "High", "Critical"] else 1, key=f"priority_{widget_key}")
-                risk = details[2].selectbox("Risk level", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(req["risk_level"]) if req["risk_level"] in ["Low", "Medium", "High"] else 1, key=f"risk_{widget_key}")
+                category = details[0].text_input("Category", value=req["category"], key=f"category_{index}")
+                priority = details[1].selectbox("Priority", ["Low", "Medium", "High", "Critical"], index=["Low", "Medium", "High", "Critical"].index(req["priority"]) if req["priority"] in ["Low", "Medium", "High", "Critical"] else 1, key=f"priority_{index}")
+                risk = details[2].selectbox("Risk level", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(req["risk_level"]) if req["risk_level"] in ["Low", "Medium", "High"] else 1, key=f"risk_{index}")
                 edited = dict(req)
                 edited.update(statement=statement, category=category, priority=priority, risk_level=risk)
                 edited_requirements.append(edited)
