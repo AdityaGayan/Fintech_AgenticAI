@@ -6,7 +6,7 @@ from src.db.models import RequirementModel, AuditLogModel
 class RequirementRepository:
     
     @staticmethod
-    def save_requirement(req: RequirementModel, user: str, role: str) -> str:
+    def save_requirement(req: RequirementModel, user: str = "Stakeholder", role: str = "Analyst") -> str:
         """Inserts or updates a requirement and creates an audit trail."""
         with get_db_connection() as conn:
             cursor = conn.cursor()

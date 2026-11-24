@@ -4,7 +4,7 @@ from datetime import datetime
 
 class RequirementModel(BaseModel):
     id: str = Field(..., description="Unique Requirement Identifier (e.g., REQ-PAY-001)")
-    domain: str = Field(..., description="Financial Domain (e.g., Payment Processing)")
+    domain: str = Field(default="FinTech", description="Financial Domain (e.g., Payment Processing)")
     statement: str = Field(..., description="The finalized requirement text")
     category: str = Field(..., description="Comma-separated list of classifications")
     source: str = Field(..., description="Originating stakeholder or document")
