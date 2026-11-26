@@ -2,142 +2,159 @@ import hashlib
 
 import streamlit as st
 
-from src.agents.coordinator_agent import (
-    generate_srs_from_input,
-)
+from src.agents.coordinator_agent import generate_srs_from_input
 from src.db.connection import init_db
 
 
-st.set_page_config(page_title="FinTech AI Studio", page_icon="F", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="FinTech Requirements Studio",
+    page_icon="◈",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 init_db()
 
 st.markdown(
     """
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-        :root { --bg:#080d18; --panel:#101827; --panel2:#141f31; --line:#22314a; --text:#edf4ff; --muted:#8ea1bc; --blue:#62a1ff; --cyan:#5eead4; }
-        .stApp { background:radial-gradient(circle at 80% -10%,#172d52 0,var(--bg) 38rem); color:var(--text); }
-        [data-testid="stHeader"] { background:transparent; }
-        .block-container { max-width:1320px; padding:1.6rem 3.2rem 4rem; }
-        h1,h2,h3,p,label,.stMarkdown { font-family:'DM Sans',sans-serif; }
-        h1,h2,h3,strong { color:var(--text)!important; }
-        h1 { font-family:'Space Grotesk',sans-serif; letter-spacing:-.045em; }
-        .hero { display:flex; align-items:flex-end; justify-content:space-between; border-bottom:1px solid var(--line); padding:.7rem 0 1.5rem; margin-bottom:1.6rem; }
-        .eyebrow,.section-label { color:var(--blue); font-size:.72rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; }
-        .hero h1 { font-size:2.55rem; margin:.35rem 0; }
-        .hero p { color:var(--muted); margin:0; max-width:760px; }
-        .hero-mark { color:var(--cyan); font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; letter-spacing:.08em; }
-        .section-label { color:var(--muted); margin:.2rem 0 .65rem; }
-        .workflow-card,.recommendation,.detail-card { background:rgba(16,24,39,.92); border:1px solid var(--line); border-radius:14px; }
-        .workflow-card { padding:1.25rem; min-height:218px; }
-        .workflow-title { color:var(--text); font-size:1.03rem; font-weight:700; margin-bottom:1rem; }
-        .workflow-step { display:flex; gap:.7rem; align-items:center; color:var(--muted); font-size:.9rem; padding:.47rem 0; border-bottom:1px solid rgba(34,49,74,.6); }
-        .workflow-step:last-child { border-bottom:0; }
-        .step-dot { width:8px; height:8px; background:var(--cyan); border-radius:50%; box-shadow:0 0 12px rgba(94,234,212,.6); }
-        .input-help,.caption { color:var(--muted); font-size:.82rem; }
-        textarea,[data-baseweb="textarea"] textarea { background:#0b1322!important; color:var(--text)!important; border-color:var(--line)!important; }
-        [data-testid="stMetric"] { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1rem; }
-        [data-testid="stMetricLabel"] { color:var(--muted)!important; }
-        [data-testid="stMetricValue"] { color:var(--text)!important; font-family:'Space Grotesk',sans-serif; }
-        .stButton>button { background:var(--blue); color:#07101e; border:0; border-radius:9px; font-weight:700; min-height:2.85rem; }
-        .stButton>button:hover { background:#8bbaff; color:#07101e; }
-        [data-testid="stExpander"] { background:var(--panel); border:1px solid var(--line); border-radius:11px; margin-bottom:.65rem; }
-        [data-testid="stExpander"] summary p { color:var(--text)!important; font-weight:600; }
-        .recommendation { padding:1.3rem 1.45rem; margin-bottom:1rem; border-color:#315b91; background:linear-gradient(110deg,#122b4d,#101827 70%); }
-        .recommendation .model { color:var(--cyan); font-family:'Space Grotesk',sans-serif; font-size:1.75rem; font-weight:700; }
-        .detail-card { padding:1rem 1.15rem; height:100%; }
-        .detail-card .label { color:var(--blue); font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
-        .detail-card .text { color:#c5d2e5; line-height:1.55; margin-top:.45rem; }
-        [data-testid="stAlert"] { background:var(--panel2); border-color:var(--line); color:var(--text); }
-        hr { border-color:var(--line); }
+        :root {
+            --ink: #eaf2ff;
+            --muted: #8fa4c2;
+            --line: rgba(137, 170, 219, .18);
+            --panel: rgba(13, 24, 43, .78);
+            --panel-strong: #111f36;
+            --blue: #80aefc;
+            --mint: #62e6c4;
+            --orange: #ffb86b;
+        }
+        .stApp {
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 0%, rgba(49, 104, 192, .28), transparent 30rem),
+                radial-gradient(circle at 95% 18%, rgba(44, 180, 161, .13), transparent 25rem),
+                #07101e;
+        }
+        [data-testid="stHeader"] { background: transparent; }
+        .block-container { max-width: 1420px; padding: 2.2rem 3.5rem 5rem; }
+        h1, h2, h3, p, label, .stMarkdown { font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3, strong { color: var(--ink) !important; }
+        h1 { font: 700 3.35rem/1.02 'Space Grotesk', sans-serif; letter-spacing: -.065em; margin: .35rem 0 1rem; }
+        h2 { font: 600 1.55rem 'Space Grotesk', sans-serif; }
+        .brand-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:3.2rem; }
+        .brand { color:var(--ink); font:700 1.1rem 'Space Grotesk', sans-serif; letter-spacing:-.03em; }
+        .brand span { color:var(--mint); }
+        .live-pill { border:1px solid rgba(98,230,196,.3); color:var(--mint); border-radius:999px; padding:.38rem .75rem; font-size:.68rem; font-weight:700; letter-spacing:.12em; }
+        .eyebrow, .section-kicker { color:var(--blue); font-size:.68rem; font-weight:700; letter-spacing:.17em; text-transform:uppercase; }
+        .hero-copy { color:var(--muted); font-size:1.02rem; line-height:1.65; max-width:660px; }
+        .hero-note { border-left:2px solid var(--mint); padding:1rem 1.2rem; color:#c9d8ed; background:rgba(98,230,196,.05); border-radius:0 12px 12px 0; line-height:1.55; }
+        .section-kicker { margin:2.6rem 0 .75rem; color:var(--muted); }
+        [data-testid="stVerticalBlockBorderWrapper"] { background:var(--panel); border:1px solid var(--line); border-radius:18px; }
+        textarea, [data-baseweb="textarea"] textarea { background:#091627 !important; color:var(--ink) !important; border:1px solid var(--line) !important; border-radius:12px !important; line-height:1.6 !important; }
+        textarea:focus { border-color:var(--blue) !important; box-shadow:0 0 0 1px var(--blue) !important; }
+        .hint { color:var(--muted); font-size:.78rem; margin-top:.65rem; }
+        .stButton > button, .stDownloadButton > button { min-height:2.85rem; border:0; border-radius:10px; color:#07121f; background:linear-gradient(135deg, #a6c7ff, #6ee8cf); font-weight:700; transition:transform .2s, box-shadow .2s; }
+        .stButton > button:hover, .stDownloadButton > button:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(98,230,196,.18); color:#07121f; }
+        [data-testid="stTab"] { color:var(--muted); font-weight:600; }
+        [aria-selected="true"] { color:var(--ink) !important; }
+        [data-baseweb="tab-highlight"] { background:var(--mint); }
+        .model-card { padding:1.45rem 1.6rem; border:1px solid rgba(98,230,196,.28); border-radius:16px; background:linear-gradient(135deg, rgba(19,66,78,.8), rgba(15,29,51,.92)); }
+        .model-label { color:var(--muted); font-size:.7rem; letter-spacing:.15em; text-transform:uppercase; }
+        .model-name { color:var(--mint); font:700 2.15rem 'Space Grotesk', sans-serif; margin:.3rem 0 1.1rem; }
+        .justification { color:#d8e5f5; font-size:1rem; line-height:1.7; }
+        .source-chip { display:inline-block; color:#b8cbee; border:1px solid var(--line); background:rgba(128,174,252,.06); border-radius:999px; padding:.4rem .7rem; margin:.25rem .25rem 0 0; font-size:.78rem; }
+        .pii-note { color:#ffd29b; border:1px solid rgba(255,184,107,.25); background:rgba(255,184,107,.08); border-radius:10px; padding:.75rem 1rem; }
+        [data-testid="stStatusWidget"] { border-color:var(--line); background:var(--panel-strong); }
+        .footer { margin-top:4rem; color:#607694; text-align:center; font-size:.75rem; }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    """
-    <div class="hero">
-        <div><div class="eyebrow">FinTech AI Studio / Operations Console</div>
-        <h1>Requirements intelligence, in one view.</h1>
-        <p>Transform stakeholder language into traceable requirements, compliance insights, risk signals, and an SDLC recommendation.</p></div>
-        <div class="hero-mark">LIVE READY</div>
-    </div>
-    """,
+    '<div class="brand-row"><div class="brand">FINTECH <span>◈</span> REQUIREMENTS STUDIO</div><div class="live-pill">AI PIPELINE READY</div></div>',
     unsafe_allow_html=True,
 )
 
-input_col, workflow_col = st.columns([1.55, 1], gap="large")
-with input_col:
-    st.markdown('<div class="section-label">01 / Intake</div>', unsafe_allow_html=True)
-    with st.container(border=True):
-        raw_input = st.text_area(
-            "Stakeholder context",
-            height=205,
-            placeholder="Example: The payment platform must log out users after 10 minutes of inactivity and encrypt stored card data.",
-        )
-        st.markdown('<div class="input-help">PII is masked before the request reaches the analysis pipeline.</div>', unsafe_allow_html=True)
-        run_analysis = st.button("Start analysis", type="primary", use_container_width=True)
-
-with workflow_col:
-    st.markdown('<div class="section-label">Pipeline status</div>', unsafe_allow_html=True)
+hero_left, hero_right = st.columns([1.35, .65], gap="large")
+with hero_left:
+    st.markdown('<div class="eyebrow">Requirements intelligence / v2</div>', unsafe_allow_html=True)
+    st.title("Turn stakeholder language into an engineering decision.")
     st.markdown(
-        """
-        <div class="workflow-card"><div class="workflow-title">SRS first. SDLC second.</div>
-        <div class="workflow-step"><span class="step-dot"></span>Secure and sanitize input</div>
-        <div class="workflow-step"><span class="step-dot"></span>Retrieve compliance guidance</div>
-        <div class="workflow-step"><span class="step-dot"></span>Generate and review the IEEE SRS</div>
-        <div class="workflow-step"><span class="step-dot"></span>Generate the SDLC model and justification</div></div>
-        """,
+        '<div class="hero-copy">Generate a detailed IEEE-style SRS and an evidence-grounded SDLC recommendation from one stakeholder brief.</div>',
+        unsafe_allow_html=True,
+    )
+with hero_right:
+    st.markdown(
+        '<div class="hero-note"><strong>One brief. Two expert agents.</strong><br>RE creates the specification. SDLC evaluates the original stakeholder context and explains the model choice.</div>',
         unsafe_allow_html=True,
     )
 
+st.markdown('<div class="section-kicker">01 / Stakeholder brief</div>', unsafe_allow_html=True)
+with st.container(border=True):
+    raw_input = st.text_area(
+        "What are you building?",
+        height=190,
+        label_visibility="visible",
+        placeholder="Example: Build a payment platform for small businesses. It must support card payments, encrypt stored card data, log users out after 10 minutes of inactivity, and provide audit-ready transaction records.",
+    )
+    action_col, hint_col = st.columns([.34, .66], vertical_alignment="center")
+    with action_col:
+        run_analysis = st.button("Generate SRS + SDLC decision", type="primary", use_container_width=True)
+    with hint_col:
+        st.markdown('<div class="hint">PII is masked before retrieval and model calls. Both agents run together after compliance context is retrieved.</div>', unsafe_allow_html=True)
+
 if run_analysis:
     if not raw_input.strip():
-        st.warning("Add stakeholder context before starting the analysis.")
+        st.warning("Add a stakeholder brief before generating the specification.")
     else:
-        with st.status("Generating SRS...", expanded=True) as srs_status:
-            st.write("Sanitizing stakeholder input")
-            st.write("Retrieving compliance guidance")
-            st.write("Generating the detailed SRS with the RE agent")
-            st.session_state["draft_analysis"] = {
+        with st.spinner("Generating your SRS and SDLC decision…"):
+            st.session_state["analysis"] = {
                 **generate_srs_from_input(raw_input),
                 "input_signature": hashlib.sha256(raw_input.strip().encode("utf-8")).hexdigest(),
             }
-            st.session_state.pop("recommendation", None)
-            srs_status.update(label="SRS ready", state="complete", expanded=False)
 
 input_signature = hashlib.sha256(raw_input.strip().encode("utf-8")).hexdigest()
-draft = st.session_state.get("draft_analysis")
-if draft and draft.get("input_signature") != input_signature:
-    draft = None
-if draft:
-    if draft["detected_pii"]:
-        st.error(f"PII masked: {', '.join(draft['detected_pii'])}")
+analysis = st.session_state.get("analysis")
+if analysis and analysis.get("input_signature") != input_signature:
+    analysis = None
 
-    st.markdown('<div class="section-label">02 / IEEE SRS</div>', unsafe_allow_html=True)
-    srs_document = draft["srs_document"]
-    st.download_button(
-        "Download SRS (Markdown)",
-        data=srs_document["markdown"],
-        file_name="software_requirements_specification.md",
-        mime="text/markdown",
-        use_container_width=True,
-    )
-    st.markdown(srs_document["markdown"])
-
-    recommendation = draft["sdlc_recommendation"]
-    if recommendation:
-        st.markdown('<div class="section-label">03 / SDLC decision</div>', unsafe_allow_html=True)
-        metrics = st.columns(1, gap="medium")
-        metrics[0].metric("Recommended model", recommendation["recommended_model"])
+if analysis:
+    if analysis["detected_pii"]:
         st.markdown(
-            f"""<div class="recommendation"><div class="model">{recommendation['recommended_model']}</div>
-            <div class="caption">Selected directly from the stakeholder input by the SDLC agent.</div></div>""",
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            f'<div class="detail-card"><div class="label">Why this model was chosen</div><div class="text">{recommendation["justification"]}</div></div>',
+            f'<div class="pii-note">Protected data masked: {", ".join(analysis["detected_pii"])}</div>',
             unsafe_allow_html=True,
         )
 
+    st.markdown('<div class="section-kicker">02 / Generated intelligence</div>', unsafe_allow_html=True)
+    srs_tab, decision_tab, evidence_tab = st.tabs(["SRS document", "SDLC decision", "Evidence & controls"])
+
+    with srs_tab:
+        download_col, _ = st.columns([.28, .72])
+        with download_col:
+            st.download_button(
+                "Download Markdown",
+                data=analysis["srs_document"]["markdown"],
+                file_name="software_requirements_specification.md",
+                mime="text/markdown",
+                use_container_width=True,
+            )
+        st.markdown(analysis["srs_document"]["markdown"])
+
+    with decision_tab:
+        recommendation = analysis["sdlc_recommendation"]
+        st.markdown(
+            f'<div class="model-card"><div class="model-label">Recommended SDLC model</div><div class="model-name">{recommendation["recommended_model"]}</div><div class="model-label">Why this model was chosen</div><div class="justification">{recommendation["justification"]}</div></div>',
+            unsafe_allow_html=True,
+        )
+
+    with evidence_tab:
+        st.markdown("#### Retrieved compliance context")
+        st.caption("These local policy sources were supplied to both agents as grounding context.")
+        sources = analysis["rag_sources_used"]
+        if sources:
+            st.markdown("".join(f'<span class="source-chip">{source}</span>' for source in sources), unsafe_allow_html=True)
+        else:
+            st.info("No matching local policy source was returned for this brief.")
+
+st.markdown('<div class="footer">FinTech Requirements Studio · traceable specifications for regulated software</div>', unsafe_allow_html=True)

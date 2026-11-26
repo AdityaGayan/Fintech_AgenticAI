@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from src.rag.compliance_rag import retrieve_compliance_guidelines
 from src.agents.re_agent import generate_srs_document, process_requirements
 from src.agents.sdlc_agent import recommend_sdlc
@@ -54,14 +56,28 @@ def generate_srs_from_input(raw_input: str):
     retrieved_policies = "\n".join(
         f"[{r['source']}] {r['content']}" for r in rag_results
     ) if rag_results else ""
-    srs_document = generate_srs_document(
-        stakeholder_context=safe_text,
-        retrieved_policies=retrieved_policies,
-    )
-    sdlc_recommendation = recommend_sdlc(
-        requirements_summary=safe_text,
-        retrieved_policies=retrieved_policies,
-    )
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        srs_future = executor.submit(
+            generate_srs_document,
+            stakeholder_context=safe_text,
+            retrieved_policies=retrieved_policies,
+        )
+        sdlc_future = executor.submit(
+            recommend_sdlc,
+            requirements_summary=safe_text,
+            retrieved_policies=retrieved_policies,
+        )
+        srs_document = srs_future.result()
+        try:
+            sdlc_recommendation = sdlc_future.result()
+        except RuntimeError:
+            # Gemini structured-output requests can occasionally collide when
+            # submitted together. Retry the same AI call sequentially; this is
+            # not a deterministic recommendation fallback.
+            sdlc_recommendation = recommend_sdlc(
+                requirements_summary=safe_text,
+                retrieved_policies=retrieved_policies,
+            )
     return {
         "masked_input": safe_text,
         "detected_pii": detected_pii,
