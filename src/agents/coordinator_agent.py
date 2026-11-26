@@ -1,7 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
 
 from src.rag.compliance_rag import retrieve_compliance_guidelines
-from src.agents.re_agent import generate_srs_document, process_requirements
+from src.agents.re_agent import process_requirements
+from src.agents.srs_agent import generate_srs_document
 from src.agents.sdlc_agent import recommend_sdlc
 from src.db.repository import RequirementRepository
 from src.db.models import RequirementModel
@@ -56,11 +57,16 @@ def generate_srs_from_input(raw_input: str):
     retrieved_policies = "\n".join(
         f"[{r['source']}] {r['content']}" for r in rag_results
     ) if rag_results else ""
+    extracted_requirements = process_requirements(
+        text=safe_text,
+        retrieved_policies=retrieved_policies,
+    )
     with ThreadPoolExecutor(max_workers=2) as executor:
         srs_future = executor.submit(
             generate_srs_document,
             stakeholder_context=safe_text,
             retrieved_policies=retrieved_policies,
+            requirements=extracted_requirements,
         )
         sdlc_future = executor.submit(
             recommend_sdlc,
@@ -83,6 +89,7 @@ def generate_srs_from_input(raw_input: str):
         "detected_pii": detected_pii,
         "rag_sources_used": [r["source"] for r in rag_results] if rag_results else [],
         "retrieved_policies": retrieved_policies,
+        "requirements": extracted_requirements,
         "srs_document": srs_document,
         "sdlc_recommendation": sdlc_recommendation,
     }
@@ -101,7 +108,7 @@ def generate_srs_from_requirements(
     stakeholder_context: str = "",
     retrieved_policies: str = "",
 ):
-    """Ask the RE agent to generate the reviewed requirements' IEEE-style SRS."""
+    """Ask the SRS agent to generate an IEEE-style SRS from extracted requirements."""
     return generate_srs_document(
         requirements=requirements,
         stakeholder_context=stakeholder_context,

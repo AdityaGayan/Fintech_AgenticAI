@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import patch
 from types import SimpleNamespace
-from src.agents.re_agent import SRSDocument, generate_srs_document, process_requirements
+from src.agents.re_agent import process_requirements
+from src.agents.srs_agent import SRSDocument, generate_srs_document
 from src.agents.sdlc_agent import recommend_sdlc
 
 class TestRefactoredAgents(unittest.TestCase):
@@ -40,7 +41,7 @@ class TestRefactoredAgents(unittest.TestCase):
         self.assertEqual(result, agent_response.model_dump())
         invoke.assert_called_once()
 
-    @patch("src.agents.re_agent.invoke_gemini_safely")
+    @patch("src.agents.srs_agent.invoke_gemini_safely")
     def test_re_agent_generates_ieee_srs(self, invoke):
         document = SRSDocument(
             title="Payments Platform SRS", version="1.0", purpose="Define the system.",
@@ -58,7 +59,7 @@ class TestRefactoredAgents(unittest.TestCase):
         )
         invoke.return_value = document
         result = generate_srs_document("The system processes payments.", "PCI-DSS")
-        self.assertEqual(result["source"], "RE Agent")
+        self.assertEqual(result["source"], "SRS Agent")
         self.assertIn("## Title Page", result["markdown"])
         self.assertIn("## Table of Contents", result["markdown"])
         self.assertIn("## 1. Introduction", result["markdown"])
@@ -66,6 +67,7 @@ class TestRefactoredAgents(unittest.TestCase):
         self.assertIn("FUN001", result["markdown"])
         self.assertIn("### 3.7 Object-Oriented Models", result["markdown"])
         self.assertIn("## 5. Index", result["markdown"])
+        self.assertTrue(result["pdf_bytes"].startswith(b"%PDF"))
 
 if __name__ == '__main__':
     unittest.main()

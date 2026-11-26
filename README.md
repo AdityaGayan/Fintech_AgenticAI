@@ -15,7 +15,7 @@ Financial software requirements often arrive as interview notes, customer emails
 - Extracts structured requirements using Gemini.
 - Classifies requirements and identifies ambiguity, risk, priority, and compliance mapping.
 - Allows a stakeholder or analyst to edit the generated requirements.
-- Sends stakeholder input directly to the RE agent for an IEEE-style SRS.
+- Sends stakeholder input to the RE agent for structured requirements, then to the SRS agent for an IEEE-style SRS.
 - Sends the stakeholder input to the SDLC agent for a model recommendation and justification.
 - Recommends Waterfall, V-Shaped, Incremental, Rapid Application Development, Prototyping, Spiral, or Agile.
 - Stores requirements and audit history in SQLite.
@@ -28,7 +28,7 @@ Financial software requirements often arrive as interview notes, customer emails
 flowchart TD
     A[User enters stakeholder context] --> B[Mask PII]
     B --> C[Retrieve relevant compliance documents]
-    C --> D[Requirements agent extracts structured requirements]
+    C --> D[RE agent extracts structured requirements]
     D --> E{AI extraction succeeds?}
     E -->|Yes| F[Show generated requirements]
     E -->|No| G[Use deterministic extraction fallback]
@@ -36,7 +36,7 @@ flowchart TD
     F --> H[Human reviews and edits requirements]
     H --> I[Validate and save edited requirements]
     I --> J[Send reviewed requirement statements to SDLC agent]
-    J --> K[RE agent generates IEEE-style SRS]
+    J --> K[SRS agent generates IEEE-style SRS]
     K --> L[SDLC agent selects model from stakeholder input]
     L --> M[Display detailed SRS, model, and justification]
 ```
@@ -51,7 +51,8 @@ flowchart TB
     RAG[Compliance retrieval\nsrc/rag/compliance_rag.py]
     Vector[Chroma vector store\nsrc/rag/vector_store.py]
     Embeddings[Hugging Face embeddings]
-    RE[Requirements agent\nsrc/agents/re_agent.py]
+RE[RE agent\nsrc/agents/re_agent.py]
+SRS[SRS agent\nsrc/agents/srs_agent.py]
     SDLC[SDLC agent\nsrc/agents/sdlc_agent.py]
     LLM[Gemini structured-output model\nsrc/agents/base_agent.py]
     DB[SQLite requirements and audit logs\nsrc/db]
@@ -93,7 +94,7 @@ flowchart TB
 
 `process_requirements()` sends the sanitized input and retrieved compliance context to Gemini. The response is validated through `AnalyzedRequirement` and `REAgentOutput`. The coordinator converts the result into records containing an ID, domain, source, priority, compliance mapping, risk level, confidence score, and review status.
 
-The user flow does not expose a separate requirements-extraction or editing step. The RE agent generates the complete SRS directly from stakeholder input and retrieved policies.
+The user flow does not expose a separate requirements-editing step. The RE agent extracts structured requirements, and the SRS agent uses those requirements plus the stakeholder context and retrieved policies to generate the complete SRS.
 
 ### 5. Human review
 
@@ -101,11 +102,11 @@ The UI displays requirements before requesting an SDLC recommendation. Users can
 
 ### 6. SDLC recommendation
 
-`generate_srs_from_input()` sends the stakeholder input directly to `recommend_sdlc()` at the same time it requests the SRS from the RE agent. The SDLC response contains only the selected model and justification. If the SDLC agent cannot respond, the coordinator surfaces an error rather than substituting a local recommendation.
+`generate_srs_from_input()` sends the stakeholder input to the RE agent, then generates the SRS and sends the same stakeholder input to `recommend_sdlc()`. The SDLC response contains only the selected model and justification. If the SDLC agent cannot respond, the coordinator surfaces an error rather than substituting a local recommendation.
 
 ### 7. IEEE-style SRS generation
 
-`generate_srs_from_input()` calls `generate_srs_document()` in `src/agents/re_agent.py` to produce the requested Title Page, Table of Contents, Introduction, Overall Description, Specific Requirements, Appendices, and Index sections. The UI displays the detailed Markdown SRS immediately and provides a download.
+`generate_srs_from_input()` calls `generate_srs_document()` in `src/agents/srs_agent.py` to produce the requested Title Page, Table of Contents, Introduction, Overall Description, Specific Requirements, Appendices, and Index sections. The UI previews the detailed SRS and provides a formatted PDF download.
 
 ### 7. Persistence and audit
 
@@ -126,7 +127,7 @@ Fintech_AgenticAI/
 │   ├── agents/
 │   │   ├── base_agent.py           # Gemini initialization and safe invocation
 │   │   ├── coordinator_agent.py    # Workflow orchestration
-│   │   ├── re_agent.py             # Requirements extraction
+│   │   ├── srs_agent.py            # SRS generation
 │   │   └── sdlc_agent.py           # SDLC recommendation
 │   ├── db/                         # SQLite connection, models, repositories
 │   ├── rag/                        # Document loading, embeddings, retrieval

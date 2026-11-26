@@ -127,16 +127,33 @@ if analysis:
         )
 
     st.markdown('<div class="section-kicker">02 / Generated intelligence</div>', unsafe_allow_html=True)
-    srs_tab, decision_tab, evidence_tab = st.tabs(["SRS document", "SDLC decision", "Evidence & controls"])
+    requirements_tab, srs_tab, decision_tab, evidence_tab = st.tabs([
+        "Extracted requirements", "SRS document", "SDLC decision", "Evidence & controls"
+    ])
+
+    with requirements_tab:
+        st.caption("Requirements extracted by the RE agent and used to enrich the SRS.")
+        for requirement in analysis["requirements"]:
+            with st.container(border=True):
+                heading_col, priority_col = st.columns([.8, .2])
+                with heading_col:
+                    st.markdown(f"**{requirement['id']}** · {requirement['category']}")
+                with priority_col:
+                    st.caption(f"{requirement['priority']} priority")
+                st.write(requirement["statement"])
+                st.caption(
+                    f"Risk: {requirement['risk_level']} · "
+                    f"Compliance: {requirement['compliance_mapping']}"
+                )
 
     with srs_tab:
         download_col, _ = st.columns([.28, .72])
         with download_col:
             st.download_button(
-                "Download Markdown",
-                data=analysis["srs_document"]["markdown"],
-                file_name="software_requirements_specification.md",
-                mime="text/markdown",
+                "Download PDF",
+                data=analysis["srs_document"]["pdf_bytes"],
+                file_name=analysis["srs_document"]["pdf_filename"],
+                mime="application/pdf",
                 use_container_width=True,
             )
         st.markdown(analysis["srs_document"]["markdown"])
