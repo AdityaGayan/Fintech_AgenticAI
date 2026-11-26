@@ -3,9 +3,7 @@ import hashlib
 import streamlit as st
 
 from src.agents.coordinator_agent import (
-    extract_requirements,
-    recommend_from_requirements,
-    save_requirements,
+    generate_srs_from_input,
 )
 from src.db.connection import init_db
 
@@ -85,11 +83,11 @@ with workflow_col:
     st.markdown('<div class="section-label">Pipeline status</div>', unsafe_allow_html=True)
     st.markdown(
         """
-        <div class="workflow-card"><div class="workflow-title">Four agents. One decision surface.</div>
+        <div class="workflow-card"><div class="workflow-title">SRS first. SDLC second.</div>
         <div class="workflow-step"><span class="step-dot"></span>Secure and sanitize input</div>
         <div class="workflow-step"><span class="step-dot"></span>Retrieve compliance guidance</div>
-        <div class="workflow-step"><span class="step-dot"></span>Extract and assess requirements</div>
-        <div class="workflow-step"><span class="step-dot"></span>Recommend the SDLC model</div></div>
+        <div class="workflow-step"><span class="step-dot"></span>Generate and review the IEEE SRS</div>
+        <div class="workflow-step"><span class="step-dot"></span>Generate the SDLC model and justification</div></div>
         """,
         unsafe_allow_html=True,
     )
@@ -98,70 +96,48 @@ if run_analysis:
     if not raw_input.strip():
         st.warning("Add stakeholder context before starting the analysis.")
     else:
-        with st.status("Extracting requirements...", expanded=True) as extraction_status:
+        with st.status("Generating SRS...", expanded=True) as srs_status:
             st.write("Sanitizing stakeholder input")
-            st.write("Extracting and assessing requirements")
+            st.write("Retrieving compliance guidance")
+            st.write("Generating the detailed SRS with the RE agent")
             st.session_state["draft_analysis"] = {
-                **extract_requirements(raw_input),
+                **generate_srs_from_input(raw_input),
                 "input_signature": hashlib.sha256(raw_input.strip().encode("utf-8")).hexdigest(),
             }
             st.session_state.pop("recommendation", None)
-            st.session_state.pop("final_requirements", None)
-            extraction_status.update(label="Requirements ready for review", state="complete", expanded=False)
+            srs_status.update(label="SRS ready", state="complete", expanded=False)
 
 input_signature = hashlib.sha256(raw_input.strip().encode("utf-8")).hexdigest()
 draft = st.session_state.get("draft_analysis")
 if draft and draft.get("input_signature") != input_signature:
     draft = None
 if draft:
-    requirements = draft["requirements"]
-
     if draft["detected_pii"]:
         st.error(f"PII masked: {', '.join(draft['detected_pii'])}")
 
-    st.markdown('<div class="section-label">02 / Requirements gathered</div>', unsafe_allow_html=True)
-    st.caption("Review or edit the extracted requirements before asking the AI to select an SDLC model.")
+    st.markdown('<div class="section-label">02 / IEEE SRS</div>', unsafe_allow_html=True)
+    srs_document = draft["srs_document"]
+    st.download_button(
+        "Download SRS (Markdown)",
+        data=srs_document["markdown"],
+        file_name="software_requirements_specification.md",
+        mime="text/markdown",
+        use_container_width=True,
+    )
+    st.markdown(srs_document["markdown"])
 
-    with st.form("requirements_review"):
-        edited_requirements = []
-        for index, req in enumerate(requirements):
-            with st.expander(f"{req['id']}   |   {req['priority']} priority   |   {req['risk_level']} risk", expanded=True):
-                statement = st.text_area("Requirement", value=req["statement"], key=f"statement_{index}")
-                details = st.columns(3)
-                category = details[0].text_input("Category", value=req["category"], key=f"category_{index}")
-                priority = details[1].selectbox("Priority", ["Low", "Medium", "High", "Critical"], index=["Low", "Medium", "High", "Critical"].index(req["priority"]) if req["priority"] in ["Low", "Medium", "High", "Critical"] else 1, key=f"priority_{index}")
-                risk = details[2].selectbox("Risk level", ["Low", "Medium", "High"], index=["Low", "Medium", "High"].index(req["risk_level"]) if req["risk_level"] in ["Low", "Medium", "High"] else 1, key=f"risk_{index}")
-                edited = dict(req)
-                edited.update(statement=statement, category=category, priority=priority, risk_level=risk)
-                edited_requirements.append(edited)
-
-        determine_model = st.form_submit_button("Save edits and determine SDLC model", type="primary", use_container_width=True)
-
-    if determine_model:
-        with st.status("Determining the SDLC model...", expanded=True) as recommendation_status:
-            st.write("Saving reviewed requirements")
-            final_requirements = save_requirements(edited_requirements)
-            st.write("Sending the reviewed requirements to the SDLC agent")
-            recommendation = recommend_from_requirements(final_requirements, draft["retrieved_policies"])
-            recommendation_status.update(label="SDLC recommendation ready", state="complete", expanded=False)
-        st.session_state["final_requirements"] = final_requirements
-        st.session_state["recommendation"] = recommendation
-
-    recommendation = st.session_state.get("recommendation")
-    final_requirements = st.session_state.get("final_requirements", requirements)
+    recommendation = draft["sdlc_recommendation"]
     if recommendation:
-        st.markdown('<div class="section-label">03 / Decision output</div>', unsafe_allow_html=True)
-        metrics = st.columns(3, gap="medium")
+        st.markdown('<div class="section-label">03 / SDLC decision</div>', unsafe_allow_html=True)
+        metrics = st.columns(1, gap="medium")
         metrics[0].metric("Recommended model", recommendation["recommended_model"])
-        metrics[1].metric("Confidence", f"{recommendation['confidence_percentage']}%")
-        metrics[2].metric("Requirements reviewed", len(final_requirements))
         st.markdown(
             f"""<div class="recommendation"><div class="model">{recommendation['recommended_model']}</div>
-            <div class="caption">Generated from the requirements you reviewed ({recommendation.get("selection_source", "AI")} selection).</div></div>""",
+            <div class="caption">Selected directly from the stakeholder input by the SDLC agent.</div></div>""",
             unsafe_allow_html=True,
         )
-        detail_cols = st.columns(2, gap="medium")
-        with detail_cols[0]:
-            st.markdown(f'<div class="detail-card"><div class="label">Rationale</div><div class="text">{recommendation["justification"]}</div></div>', unsafe_allow_html=True)
-        with detail_cols[1]:
-            st.markdown(f'<div class="detail-card"><div class="label">Key phases</div><div class="text">{recommendation["key_phases"]}</div></div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div class="detail-card"><div class="label">Why this model was chosen</div><div class="text">{recommendation["justification"]}</div></div>',
+            unsafe_allow_html=True,
+        )
+

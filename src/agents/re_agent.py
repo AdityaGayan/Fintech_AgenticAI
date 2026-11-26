@@ -16,6 +16,170 @@ class AnalyzedRequirement(BaseModel):
 class REAgentOutput(BaseModel):
     requirements: List[AnalyzedRequirement]
 
+
+class SRSDocument(BaseModel):
+    title: str
+    version: str
+    purpose: str
+    scope: str
+    definitions_and_acronyms: List[str]
+    references: List[str]
+    overview: str
+    product_perspective: str
+    product_functions: List[str]
+    user_characteristics: List[str]
+    constraints: List[str]
+    assumptions_and_dependencies: List[str]
+    user_interfaces: List[str]
+    hardware_interfaces: List[str]
+    software_interfaces: List[str]
+    communication_interfaces: List[str]
+    functions: List[str]
+    performance_requirements: List[str]
+    logical_database_requirements: List[str]
+    design_constraints: List[str]
+    software_quality_attributes: List[str]
+    object_oriented_models: List[str]
+    appendices: List[str]
+    index: List[str]
+
+    def to_ieee_markdown(self) -> str:
+        """Render the structured requirements into an IEEE-style SRS outline."""
+        def bullets(items: List[str]) -> str:
+            return "\n".join(f"- {item}" for item in items) or "- None identified"
+
+        def requirement_bullets(items: List[str], prefix: str) -> str:
+            if not items:
+                return "- None identified"
+            return "\n".join(
+                f"- **{prefix}{index:03d}:** {item}"
+                for index, item in enumerate(items, start=1)
+            )
+
+        return f"""# Software Requirements Specification
+
+## Title Page
+
+- **Title:** {self.title}
+- **Version:** {self.version}
+
+## Table of Contents
+
+1. Introduction
+2. Overall Description
+3. Specific Requirements
+4. Appendices
+5. Index
+
+## 1. Introduction
+
+### 1.1 Purpose
+{self.purpose}
+
+### 1.2 Scope
+{self.scope}
+
+### 1.3 Definitions, Acronyms, and Abbreviations
+{bullets(self.definitions_and_acronyms)}
+
+### 1.4 References
+{bullets(self.references)}
+
+### 1.5 Overview
+{self.overview}
+
+## 2. Overall Description
+
+### 2.1 Product Perspective
+{self.product_perspective}
+
+### 2.2 Product Functions
+{bullets(self.product_functions)}
+
+### 2.3 User Characteristics
+{bullets(self.user_characteristics)}
+
+### 2.4 Constraints
+{bullets(self.constraints)}
+
+### 2.5 Assumptions and Dependencies
+{bullets(self.assumptions_and_dependencies)}
+
+## 3. Specific Requirements
+
+### 3.1 External Interfaces
+
+#### 3.1.1 User Interfaces
+{requirement_bullets(self.user_interfaces, "UI")}
+
+#### 3.1.2 Hardware Interfaces
+{requirement_bullets(self.hardware_interfaces, "HI")}
+
+#### 3.1.3 Software Interfaces
+{requirement_bullets(self.software_interfaces, "SI")}
+
+#### 3.1.4 Communication Interfaces
+{requirement_bullets(self.communication_interfaces, "CI")}
+
+### 3.2 Functions
+{requirement_bullets(self.functions, "F")}
+
+### 3.3 Performance Requirements
+{requirement_bullets(self.performance_requirements, "P")}
+
+### 3.4 Logical Database Requirements
+{requirement_bullets(self.logical_database_requirements, "DB")}
+
+### 3.5 Design Constraints
+{requirement_bullets(self.design_constraints, "C")}
+
+### 3.6 Software System Quality Attributes
+{requirement_bullets(self.software_quality_attributes, "Q")}
+
+### 3.7 Object-Oriented Models
+{requirement_bullets(self.object_oriented_models, "OO")}
+
+## 4. Appendices
+{bullets(self.appendices)}
+
+## 5. Index
+{bullets(self.index)}
+"""
+
+
+def generate_srs_document(
+    stakeholder_context: str = "",
+    retrieved_policies: str = "",
+    requirements: Optional[List[dict]] = None,
+) -> dict:
+    """Generate the complete IEEE-style SRS directly from stakeholder input."""
+    legacy_requirements = ""
+    if requirements:
+        legacy_requirements = "\n".join(
+            f"{req['id']}: {req['statement']} | Category: {req['category']} | "
+            f"Priority: {req['priority']} | Compliance: {req['compliance_mapping']}"
+            for req in requirements
+        )
+    prompt = (
+        "You are a senior Requirements Engineer. Generate a complete Software "
+        "Requirements Specification following the IEEE 830/29148-style structure. "
+        "Use only the supplied stakeholder context and retrieved policies. Do not "
+        "invent business capabilities. Generate every section in the requested "
+        "format, including all four external-interface subsections. Translate the "
+        "stakeholder statements into precise, testable requirements.\n\n"
+        f"Stakeholder context:\n{stakeholder_context}\n\n"
+        f"Previously structured requirements, if present:\n{legacy_requirements or 'None'}\n\n"
+        f"Retrieved policies:\n{retrieved_policies or 'None'}"
+    )
+    result = invoke_gemini_safely(SRSDocument, prompt)
+    if result is None:
+        raise RuntimeError("The RE agent could not generate the SRS document.")
+    return {
+        "structured_document": result.model_dump(),
+        "markdown": result.to_ieee_markdown(),
+        "source": "RE Agent",
+    }
+
 def detect_domain_from_input(text: str, policies: str = "") -> str:
     """Dynamically detects the financial domain from the stakeholder text and RAG policies."""
     combined = (text + " " + policies).lower()

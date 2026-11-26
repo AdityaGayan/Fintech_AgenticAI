@@ -1,5 +1,5 @@
 from src.rag.compliance_rag import retrieve_compliance_guidelines
-from src.agents.re_agent import process_requirements
+from src.agents.re_agent import generate_srs_document, process_requirements
 from src.agents.sdlc_agent import recommend_sdlc
 from src.db.repository import RequirementRepository
 from src.db.models import RequirementModel
@@ -39,7 +39,7 @@ def save_requirements(requirements, user: str = "Stakeholder", role: str = "Anal
 
 
 def recommend_from_requirements(requirements, retrieved_policies: str = ""):
-    """Ask the SDLC agent to recommend a model from the final requirements."""
+    """Compatibility wrapper for selecting a model from requirement statements."""
     req_summary = ", ".join([r["statement"] for r in requirements])
     return recommend_sdlc(
         requirements_summary=req_summary,
@@ -47,17 +47,60 @@ def recommend_from_requirements(requirements, retrieved_policies: str = ""):
     )
 
 
-def run_full_pipeline(raw_input: str, user: str = "Stakeholder", role: str = "Analyst"):
-    """Run the complete workflow for non-interactive callers."""
-    extracted = extract_requirements(raw_input)
-    processed_reqs = save_requirements(extracted["requirements"], user=user, role=role)
+def generate_srs_from_input(raw_input: str):
+    """Generate the SRS and SDLC model together from the stakeholder input."""
+    safe_text, detected_pii = sanitize_input(raw_input)
+    rag_results = retrieve_compliance_guidelines(query=safe_text, top_k=2)
+    retrieved_policies = "\n".join(
+        f"[{r['source']}] {r['content']}" for r in rag_results
+    ) if rag_results else ""
+    srs_document = generate_srs_document(
+        stakeholder_context=safe_text,
+        retrieved_policies=retrieved_policies,
+    )
+    sdlc_recommendation = recommend_sdlc(
+        requirements_summary=safe_text,
+        retrieved_policies=retrieved_policies,
+    )
+    return {
+        "masked_input": safe_text,
+        "detected_pii": detected_pii,
+        "rag_sources_used": [r["source"] for r in rag_results] if rag_results else [],
+        "retrieved_policies": retrieved_policies,
+        "srs_document": srs_document,
+        "sdlc_recommendation": sdlc_recommendation,
+    }
 
-    sdlc_rec = recommend_from_requirements(processed_reqs, extracted["retrieved_policies"])
+
+def recommend_from_srs(srs_document: dict, retrieved_policies: str = ""):
+    """Compatibility wrapper for selecting a model from an SRS."""
+    return recommend_sdlc(
+        requirements_summary=srs_document["markdown"],
+        retrieved_policies=retrieved_policies,
+    )
+
+
+def generate_srs_from_requirements(
+    requirements,
+    stakeholder_context: str = "",
+    retrieved_policies: str = "",
+):
+    """Ask the RE agent to generate the reviewed requirements' IEEE-style SRS."""
+    return generate_srs_document(
+        requirements=requirements,
+        stakeholder_context=stakeholder_context,
+        retrieved_policies=retrieved_policies,
+    )
+
+
+def run_full_pipeline(raw_input: str, user: str = "Stakeholder", role: str = "Analyst"):
+    """Run the SRS-first workflow for non-interactive callers."""
+    prepared = generate_srs_from_input(raw_input)
 
     return {
-        "masked_input": extracted["masked_input"],
-        "detected_pii": extracted["detected_pii"],
-        "rag_sources_used": extracted["rag_sources_used"],
-        "requirements": processed_reqs,
-        "sdlc_recommendation": sdlc_rec
+        "masked_input": prepared["masked_input"],
+        "detected_pii": prepared["detected_pii"],
+        "rag_sources_used": prepared["rag_sources_used"],
+        "sdlc_recommendation": prepared["sdlc_recommendation"],
+        "srs_document": prepared["srs_document"],
     }
