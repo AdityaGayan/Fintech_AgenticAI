@@ -14,7 +14,13 @@ AllowedModels = Literal[
 
 class SDLCRecommendation(BaseModel):
     recommended_model: AllowedModels = Field(description="The chosen SDLC methodology.")
-    justification: str = Field(description="Why this model fits the stakeholder input and regulatory profile.")
+    justification: str = Field(
+        description=(
+            "A clear five-mark justification covering stakeholder evidence, "
+            "risk and regulatory fit, how the model addresses the needs, "
+            "why alternatives are less suitable, and the expected outcome."
+        )
+    )
 
 
 def recommend_sdlc(
@@ -42,6 +48,13 @@ def recommend_sdlc(
         "You MUST choose exactly one of these: Waterfall, V-Shaped, "
         "Incremental, Rapid Application Development, Prototyping, "
         "Spiral, Agile. Return only the selected model and a specific justification. "
+        "Write the justification as a strong five-mark academic answer in one coherent response. "
+        "It must explicitly cover: (1) evidence from the stakeholder input, "
+        "(2) regulatory, security, business-risk, or complexity considerations, "
+        "(3) how the selected lifecycle manages those needs, "
+        "(4) why the most plausible alternative models are less suitable, and "
+        "(5) the expected project outcome. Use only facts supported by the input "
+        "and policies; do not invent requirements. "
         "Do not return confidence, phases, or a workflow."
     )
 

@@ -9,7 +9,7 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import mm
-from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer
 
 from src.agents.base_agent import invoke_gemini_safely
 
@@ -57,7 +57,6 @@ class SRSDocument(BaseModel):
 ## Title Page
 
 - **Title:** {self.title}
-- **Version:** {self.version}
 
 ## Table of Contents
 
@@ -109,28 +108,28 @@ class SRSDocument(BaseModel):
 {requirement_bullets(self.user_interfaces, "UI")}
 
 #### 3.1.2 Hardware Interfaces
-{requirement_bullets(self.hardware_interfaces, "HW")}
+{requirement_bullets(self.hardware_interfaces, "HI")}
 
 #### 3.1.3 Software Interfaces
-{requirement_bullets(self.software_interfaces, "SW")}
+{requirement_bullets(self.software_interfaces, "SI")}
 
 #### 3.1.4 Communication Interfaces
-{requirement_bullets(self.communication_interfaces, "COM")}
+{requirement_bullets(self.communication_interfaces, "CI")}
 
 ### 3.2 Functions
-{requirement_bullets(self.functions, "FUN")}
+{requirement_bullets(self.functions, "F")}
 
 ### 3.3 Performance Requirements
-{requirement_bullets(self.performance_requirements, "PERF")}
+{requirement_bullets(self.performance_requirements, "P")}
 
 ### 3.4 Logical Database Requirements
 {requirement_bullets(self.logical_database_requirements, "DB")}
 
 ### 3.5 Design Constraints
-{requirement_bullets(self.design_constraints, "DC")}
+{requirement_bullets(self.design_constraints, "C")}
 
 ### 3.6 Software System Quality Attributes
-{requirement_bullets(self.software_quality_attributes, "QA")}
+{requirement_bullets(self.software_quality_attributes, "Q")}
 
 ### 3.7 Object-Oriented Models
 {requirement_bullets(self.object_oriented_models, "OO")}
@@ -180,6 +179,8 @@ class SRSDocument(BaseModel):
             elif stripped.startswith("# "):
                 story.append(Paragraph(inline_markup(stripped[2:]), styles["SRSTitle"]))
             elif stripped.startswith("## "):
+                if stripped != "## Title Page" and story:
+                    story.append(PageBreak())
                 story.append(Paragraph(inline_markup(stripped[3:]), styles["SRSHeading"]))
             elif stripped.startswith("### ") or stripped.startswith("#### "):
                 offset = 4 if stripped.startswith("#### ") else 3
@@ -233,8 +234,12 @@ def generate_srs_document(
         "detailed: explain the business context, actors, system boundaries, normal "
         "and exception flows, validation rules, measurable performance targets, "
         "data entities, security controls, operational constraints, quality goals, "
-        "and verification criteria. Provide multiple concrete items in each "
-        "applicable Specific Requirements subsection.\n\n"
+        "and verification criteria. Provide 3 to 8 concrete items in each "
+        "applicable Specific Requirements subsection. For functions, describe "
+        "actors, triggers, preconditions, normal flow, alternate and exception "
+        "flows, postconditions, validation rules, and acceptance criteria. For "
+        "performance and quality attributes, use measurable targets wherever the "
+        "stakeholder context supports them.\n\n"
         f"Stakeholder context:\n{stakeholder_context}\n\n"
         f"Previously structured requirements, if present:\n{legacy_requirements or 'None'}\n\n"
         f"Retrieved policies:\n{retrieved_policies or 'None'}"
